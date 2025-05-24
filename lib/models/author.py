@@ -54,3 +54,33 @@ class Author:
             WHERE articles.author_id = ?
         """, (self.id,))
         return [row['category'] for row in cursor.fetchall()]
+    
+    
+def add_author_with_articles(author_name, articles_data):
+    conn = get_connection()
+    try:
+        conn.execute("BEGIN TRANSACTION")
+        cursor = conn.cursor()
+        
+        # Insert author
+        cursor.execute(
+            "INSERT INTO authors (name) VALUES (?) RETURNING id",
+            (author_name,)
+        )
+        author_id = cursor.fetchone()[0]
+        
+        # Insert articles
+        for article in articles_data:
+            cursor.execute(
+                "INSERT INTO articles (title, author_id, magazine_id) VALUES (?, ?, ?)",
+                (article['title'], author_id, article['magazine_id'])
+            )
+        
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Transaction failed: {e}")
+        return False
+    finally:
+        conn.close()
