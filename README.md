@@ -13,3 +13,14 @@ A Python system modeling relationships between Authors, Articles, and Magazines 
    pip install pytest sqlite3
 
 ### Initialize database:
+
+python scripts/setup_db.py
+
+### Run tests:
+pytest
+
+### Domain Model
+
+![Domain Model](https://i.imgur.com/SOSGjF6.png)
+
+
