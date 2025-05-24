@@ -25,8 +25,11 @@ pytest
 
 
 ### Key Features
-Class	Key Methods
+Class	 Key Methods
+
 Author	articles(), magazines(), add_article(), topic_areas()
+
 Magazine	articles(), contributors(), article_titles(), contributing_authors()
+
 Article	Relationship methods to connect authors and magazines
 
