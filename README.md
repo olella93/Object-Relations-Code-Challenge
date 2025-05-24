@@ -24,3 +24,9 @@ pytest
 ![Domain Model](https://i.imgur.com/SOSGjF6.png)
 
 
+### Key Features
+Class	Key Methods
+Author	articles(), magazines(), add_article(), topic_areas()
+Magazine	articles(), contributors(), article_titles(), contributing_authors()
+Article	Relationship methods to connect authors and magazines
+
