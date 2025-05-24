@@ -33,3 +33,20 @@ Magazine	articles(), contributors(), article_titles(), contributing_authors()
 
 Article	Relationship methods to connect authors and magazines
 
+### Example Usage
+
+from lib.models import Author, Magazine
+
+# Create objects
+author = Author("Jane Doe")
+mag = Magazine("Tech Weekly", "Technology")
+
+# Save to DB
+author.save()
+mag.save()
+
+# Add article
+author.add_article(mag, "Python Patterns")
+
+# Query relationships
+print(author.magazines())  # [{'name': 'Tech Weekly', ...}]
