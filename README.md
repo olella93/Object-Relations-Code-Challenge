@@ -36,11 +36,13 @@ Article	Relationship methods to connect authors and magazines
 ### Database Schema
 See lib/db/schema.sql for:
 
-Table definitions
+- Table definitions
 
-Foreign key constraints
+- Foreign key constraints
 
-Performance indexes
+- Performance indexes
 
 ### Testing
 Run all tests:
+
+pytest tests/
