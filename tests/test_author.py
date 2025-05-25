@@ -7,15 +7,9 @@ class TestAuthor:
     
     @classmethod
     def setup_class(cls):
-        """Seed test data"""
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.executescript("""
-            DELETE FROM articles;
-            DELETE FROM authors;
-            INSERT INTO authors (name) VALUES ('Test Author');
-        """)
-        conn.commit()
+        """Use the project's official setup script"""
+        import subprocess
+        subprocess.run(["python", "scripts/setup_db.py"], check=True)
 
     def test_save(self):
         author = Author("Jane Doe")
