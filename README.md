@@ -7,6 +7,40 @@ A Python system modeling relationships between Authors, Articles, and Magazines 
 - Transaction handling
 - Test coverage
 
+### Project Structure
+
+.
+├── lib/
+
+│   ├── models/
+
+│   │   ├── author.py
+
+│   │   ├── magazine.py
+
+│   │   └── article.py
+
+│   └── db/
+
+│       ├── connection.py
+
+│       └── seed.py
+
+├── tests/
+
+│   ├── test_article.py
+
+│   ├── test_author.py
+
+│   └── test_magazine.py
+
+├── .venv/
+
+├── README.md
+
+└── requirements.txt
+
+
 ## Setup
 1. **Install dependencies**:
    ```bash
