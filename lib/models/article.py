@@ -1,9 +1,9 @@
 from lib.db.connection import get_connection
-from lib.models.author import Author
-from lib.models.magazine import Magazine
 
 class Article:
     def __init__(self, id, title, author_id, magazine_id):
+        if not title or not isinstance(title, str):
+            raise ValueError("Title must be a non-empty string.")
         self.id = id
         self.title = title
         self.author_id = author_id
@@ -80,9 +80,11 @@ class Article:
         conn.close()
 
     def author(self):
+        from lib.models.author import Author 
         return Author.find_by_id(self.author_id)
 
     def magazine(self):
+        from lib.models.magazine import Magazine 
         return Magazine.find_by_id(self.magazine_id)
 
     def __repr__(self):

@@ -1,5 +1,6 @@
 from lib.db.connection import get_connection
 from lib.models.author import Author
+from lib.models.article import Article
 
 class Magazine:
     def __init__(self, id, name, category):
@@ -68,15 +69,12 @@ class Magazine:
         conn.commit()
         conn.close()
 
-    # Relationship methods
-
     def articles(self):
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM articles WHERE magazine_id = ?", (self.id,))
         rows = cursor.fetchall()
         conn.close()
-        from lib.models.article import Article
         return [Article(row['id'], row['title'], row['author_id'], row['magazine_id']) for row in rows]
 
     def contributors(self):
@@ -100,7 +98,6 @@ class Magazine:
         return [row['title'] for row in rows]
 
     def contributing_authors(self):
-        # authors with more than 2 articles in this magazine
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -117,7 +114,6 @@ class Magazine:
 
     @classmethod
     def top_publisher(cls):
-        # Bonus challenge: magazine with most articles
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -178,3 +174,18 @@ class Magazine:
         rows = cursor.fetchall()
         conn.close()
         return {row['name']: row['article_count'] for row in rows}
+
+    @classmethod
+    def magazines_with_multiple_authors(cls):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT m.*, COUNT(DISTINCT ar.author_id) AS author_count
+            FROM magazines m
+            JOIN articles ar ON m.id = ar.magazine_id
+            GROUP BY m.id
+            HAVING author_count > 1
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [cls(row['id'], row['name'], row['category']) for row in rows]

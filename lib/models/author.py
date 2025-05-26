@@ -1,6 +1,4 @@
 from lib.db.connection import get_connection
-from lib.models.article import Article
-from lib.models.magazine import Magazine
 
 class Author:
     def __init__(self, id=None, name=None):
@@ -35,6 +33,7 @@ class Author:
         return Author(**row) if row else None
 
     def articles(self):
+        from lib.models.article import Article 
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM articles WHERE author_id = ?", (self.id,))
@@ -43,6 +42,7 @@ class Author:
         return [Article(row['id'], row['title'], row['author_id'], row['magazine_id']) for row in rows]
 
     def magazines(self):
+        from lib.models.magazine import Magazine  
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -67,6 +67,8 @@ class Author:
         return [row['category'] for row in rows]
 
     def add_article(self, magazine, title):
+        from lib.models.article import Article  
+        from lib.models.magazine import Magazine  
         if not isinstance(magazine, Magazine):
             raise TypeError("Expected a Magazine instance")
         article = Article(None, title, self.id, magazine.id)
@@ -90,3 +92,13 @@ class Author:
         if row:
             return cls(row['id'], row['name'])
         return None
+    
+    @classmethod
+    def find_by_name(cls, name):
+     conn = get_connection()
+     cursor = conn.cursor()
+     cursor.execute("SELECT * FROM authors WHERE name = ?", (name,))
+     row = cursor.fetchone()
+     conn.close()
+     return cls(row['id'], row['name']) if row else None
+
