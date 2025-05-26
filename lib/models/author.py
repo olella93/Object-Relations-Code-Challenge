@@ -1,24 +1,37 @@
-from lib.db import get_connection
+from lib.db.connection import get_connection
+from lib.models.article import Article
 
 class Author:
-    def __init__(self, name, id=None):
-        self.name = name
+    def __init__(self, id=None, name=None):
         self.id = id
+        self.name = name
+
+    @classmethod
+    def all(cls):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM authors")
+        rows = cursor.fetchall()
+        authors = [cls(row['id'], row['name']) for row in rows]
+        conn.close()
+        return authors
 
     def save(self):
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO authors (name) VALUES (?)", (self.name,))
+        cursor.execute("INSERT INTO authors (name) VALUES (?) RETURNING id", (self.name,))
+        self.id = cursor.fetchone()["id"]
         conn.commit()
-        self.id = cursor.lastrowid
+        conn.close()
 
-    @classmethod
-    def find_by_id(cls, id):
+    @staticmethod
+    def find_by_id(id):
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM authors WHERE id = ?", (id,))
         row = cursor.fetchone()
-        return cls(row['name'], row['id']) if row else None
+        conn.close()
+        return Author(**row) if row else None
 
     def articles(self):
         conn = get_connection()
@@ -30,11 +43,21 @@ class Author:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT DISTINCT magazines.* FROM magazines
-            JOIN articles ON magazines.id = articles.magazine_id
-            WHERE articles.author_id = ?
+            SELECT DISTINCT m.* FROM magazines m
+            JOIN articles a ON m.id = a.magazine_id
+            WHERE a.author_id = ?
         """, (self.id,))
         return cursor.fetchall()
+
+    def topic_areas(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT m.category FROM magazines m
+            JOIN articles a ON m.id = a.magazine_id
+            WHERE a.author_id = ?
+        """, (self.id,))
+        return [row["category"] for row in cursor.fetchall()]
 
     def add_article(self, magazine, title):
         conn = get_connection()
@@ -44,43 +67,4 @@ class Author:
             (title, self.id, magazine.id)
         )
         conn.commit()
-
-    def topic_areas(self):
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT DISTINCT category FROM magazines
-            JOIN articles ON magazines.id = articles.magazine_id
-            WHERE articles.author_id = ?
-        """, (self.id,))
-        return [row['category'] for row in cursor.fetchall()]
-    
-    
-def add_author_with_articles(author_name, articles_data):
-    conn = get_connection()
-    try:
-        conn.execute("BEGIN TRANSACTION")
-        cursor = conn.cursor()
-        
-        # Insert author
-        cursor.execute(
-            "INSERT INTO authors (name) VALUES (?) RETURNING id",
-            (author_name,)
-        )
-        author_id = cursor.fetchone()[0]
-        
-        # Insert articles
-        for article in articles_data:
-            cursor.execute(
-                "INSERT INTO articles (title, author_id, magazine_id) VALUES (?, ?, ?)",
-                (article['title'], author_id, article['magazine_id'])
-            )
-        
-        conn.commit()
-        return True
-    except Exception as e:
-        conn.rollback()
-        print(f"Transaction failed: {e}")
-        return False
-    finally:
         conn.close()
