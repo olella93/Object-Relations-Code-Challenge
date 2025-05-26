@@ -3,6 +3,12 @@ Initialize the test database with schema and seed data
 (Mirrors instructions in 'Database Setup' section)
 """
 
+import sys
+import os
+
+# Dynamically add the project root directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from lib.db.connection import get_connection
 
 def setup_database():
