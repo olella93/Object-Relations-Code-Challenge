@@ -18,3 +18,7 @@ class TestArticle:
         article = Article("Test Article", 1, 1)
         article.save()
         assert article.id is not None
+
+    def test_article_creation():
+        article = Article("Test Article", 1, 1)
+        assert article.title == "Test Article"
