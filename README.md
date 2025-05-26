@@ -80,3 +80,58 @@ See lib/db/schema.sql for:
 Run all tests:
 
 pytest tests/
+
+### 🧠 Key Models and Methods
+Author
+
+- Author.all()
+
+- Author.find_by_name(name)
+
+- author.articles()
+
+- author.magazines()
+
+- author.add_article(title, magazine)
+
+- author.topic_areas()
+
+## Magazine
+
+- Magazine.all()
+
+- Magazine.find_by_name(name)
+
+- magazine.articles()
+
+- magazine.contributors()
+
+- magazine.article_titles()
+
+- magazine.contributing_authors()
+
+## Article
+
+- Article.all()
+
+- Article.find_by_title(title)
+
+- Article.find_by_author(author)
+
+- Article.find_by_magazine(magazine)
+
+### 📌 Requirements
+
+- Python 3.8+
+
+- SQLite (via sqlite3 built-in module)
+
+- pytest for running tests
+
+### 🙌 Credits
+
+Developed as part of the Moringa Phase 3 Software Engineering curriculum challenge.
+
+### 📝 License
+
+MIT License (or your preferred license)
