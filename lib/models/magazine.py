@@ -1,5 +1,5 @@
 from lib.db.connection import get_connection
-from lib.models.author import Author 
+from lib.models.author import Author
 
 class Magazine:
     def __init__(self, id, name, category):
@@ -136,3 +136,45 @@ class Magazine:
 
     def __repr__(self):
         return f"<Magazine {self.id}: {self.name} ({self.category})>"
+
+    @classmethod
+    def authors_for_magazine(cls, magazine_id):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT a.* FROM authors a
+            JOIN articles ar ON a.id = ar.author_id
+            WHERE ar.magazine_id = ?
+        """, (magazine_id,))
+        rows = cursor.fetchall()
+        conn.close()
+        return [Author(row['id'], row['name']) for row in rows]
+
+    @classmethod
+    def magazines_with_two_or_more_authors(cls):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT m.*, COUNT(DISTINCT ar.author_id) AS author_count
+            FROM magazines m
+            JOIN articles ar ON m.id = ar.magazine_id
+            GROUP BY m.id
+            HAVING author_count >= 2
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [cls(row['id'], row['name'], row['category']) for row in rows]
+
+    @classmethod
+    def article_counts(cls):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT m.name, COUNT(ar.id) AS article_count
+            FROM magazines m
+            LEFT JOIN articles ar ON m.id = ar.magazine_id
+            GROUP BY m.id
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return {row['name']: row['article_count'] for row in rows}

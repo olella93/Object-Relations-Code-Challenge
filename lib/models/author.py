@@ -1,5 +1,6 @@
 from lib.db.connection import get_connection
 from lib.models.article import Article
+from lib.models.magazine import Magazine
 
 class Author:
     def __init__(self, id=None, name=None):
@@ -37,7 +38,9 @@ class Author:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM articles WHERE author_id = ?", (self.id,))
-        return cursor.fetchall()
+        rows = cursor.fetchall()
+        conn.close()
+        return [Article(row['id'], row['title'], row['author_id'], row['magazine_id']) for row in rows]
 
     def magazines(self):
         conn = get_connection()
@@ -47,7 +50,9 @@ class Author:
             JOIN articles a ON m.id = a.magazine_id
             WHERE a.author_id = ?
         """, (self.id,))
-        return cursor.fetchall()
+        rows = cursor.fetchall()
+        conn.close()
+        return [Magazine(row['id'], row['name'], row['category']) for row in rows]
 
     def topic_areas(self):
         conn = get_connection()
@@ -57,14 +62,31 @@ class Author:
             JOIN articles a ON m.id = a.magazine_id
             WHERE a.author_id = ?
         """, (self.id,))
-        return [row["category"] for row in cursor.fetchall()]
+        rows = cursor.fetchall()
+        conn.close()
+        return [row['category'] for row in rows]
 
     def add_article(self, magazine, title):
+        if not isinstance(magazine, Magazine):
+            raise TypeError("Expected a Magazine instance")
+        article = Article(None, title, self.id, magazine.id)
+        article.save()
+        return article
+
+    @classmethod
+    def author_with_most_articles(cls):
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO articles (title, author_id, magazine_id) VALUES (?, ?, ?)",
-            (title, self.id, magazine.id)
-        )
-        conn.commit()
+        cursor.execute("""
+            SELECT a.*, COUNT(ar.id) AS article_count
+            FROM authors a
+            JOIN articles ar ON a.id = ar.author_id
+            GROUP BY a.id
+            ORDER BY article_count DESC
+            LIMIT 1
+        """)
+        row = cursor.fetchone()
         conn.close()
+        if row:
+            return cls(row['id'], row['name'])
+        return None
